@@ -13,8 +13,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerview: RecyclerView
 
     //sort by list id, then name
-    class listData(val listID: Int, val name: String, val id: Int) : Comparable<listData> {
-        override fun compareTo(other: listData) = compareValuesBy(this, other, { it.listID }, { it.name })
+    class ListData(val listID: Int, val name: String, val id: Int) : Comparable<ListData> {
+        override fun compareTo(other: ListData) = compareValuesBy(this, other, { it.listID }, { it.name })
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,11 +22,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val fetch = fetch()
-        fetch.start()
+        fetch.start()//start thread to download JSON
         fetch.join()//wait till the JSON has finished downloading
         val data = fetch.data
         val jArray = JSONArray(data)
-        val list = ArrayList<listData>()
+        val list = ArrayList<ListData>()
 
         for (i in 0 until jArray.length()) {
 
@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
 
             //not blank and not null name
             if(!jsonObject.get("name").equals("") && !jsonObject.get("name").equals(null)){
-                val toAdd = listData(jsonObject.get("listId") as Int, jsonObject.get("name") as String, jsonObject.get("id") as Int)
+                val toAdd = ListData(jsonObject.get("listId") as Int, jsonObject.get("name") as String, jsonObject.get("id") as Int)
                 list.add(toAdd)
             }
         }
@@ -48,7 +48,6 @@ class MainActivity : AppCompatActivity() {
     class fetch: Thread() {
 
         var data: String = ""
-
         override fun run(){
             try{
                 this.data  = URL("https://fetch-hiring.s3.amazonaws.com/hiring.json").readText()
